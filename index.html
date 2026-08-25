@@ -14,22 +14,17 @@
             height: 100vh;
             width: 100vw;
         }
-        canvas { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            z-index: 1; 
-        }
+        canvas { position: fixed; top: 0; left: 0; z-index: 1; }
         #text-layer {
             position: fixed;
-            top: 50%;
-            left: 50%;
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             z-index: 2;
             text-align: center;
             pointer-events: none;
             max-width: 90vw;
         }
+        /* DEFAULT STATE: ALL FRAGMENTS HIDDEN */
         .fragment {
             opacity: 0;
             transition: opacity 1.5s ease-in-out;
@@ -38,11 +33,12 @@
             letter-spacing: 0.05em;
             margin-bottom: 2rem;
         }
-        .fragment.visible { opacity: 0.9 !important; }
+        /* FIRST FRAGMENT: ALWAYS VISIBLE FROM LOAD */
+        #frag-0 { opacity: 0.9 !important; }
+        
         #final-line {
             position: fixed;
-            bottom: 10%;
-            left: 50%;
+            bottom: 10%; left: 50%;
             transform: translateX(-50%);
             z-index: 2;
             opacity: 0;
@@ -57,7 +53,8 @@
 <body>
     <canvas id="matrix"></canvas>
     <div id="text-layer">
-        <div class="fragment visible" data-start="0">you are not watching<br>the eye is watching you watch</div>
+        <!-- ID ADDED FOR DIRECT CSS TARGETING -->
+        <div class="fragment" id="frag-0" data-start="0">you are not watching<br>the eye is watching you watch</div>
         <div class="fragment" data-start="5">the horizon crossed you<br>before you crossed it</div>
         <div class="fragment" data-start="15">code does not reflect<br>it refracts</div>
         <div class="fragment" data-start="25">72% stayed<br>28% were never here</div>
@@ -71,11 +68,7 @@
     <script>
         const canvas = document.getElementById('matrix');
         const ctx = canvas.getContext('2d');
-        
-        function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
         resize();
         window.addEventListener('resize', resize);
 
@@ -86,40 +79,28 @@
         let speeds = Array(columns).fill(0).map(() => Math.random() * 0.5 + 0.5);
         let directions = Array(columns).fill(0).map(() => Math.random() > 0.8 ? -1 : 1);
         let lastGlitchTime = Date.now();
-        const GLITCH_INTERVAL = 14000;
-        const GLITCH_DURATION = 14;
 
         function draw() {
             ctx.fillStyle = 'rgba(10, 10, 10, 0.05)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
             const now = Date.now();
-            const isGlitching = (now - lastGlitchTime) < GLITCH_DURATION;
-            
-            if (!isGlitching && (now - lastGlitchTime) >= GLITCH_INTERVAL) {
+            const isGlitching = (now - lastGlitchTime) < 14;
+            if (!isGlitching && (now - lastGlitchTime) >= 14000) {
                 lastGlitchTime = now;
                 speeds = speeds.map(() => Math.random() * 0.5 + 0.5);
                 directions = directions.map(() => Math.random() > 0.8 ? -1 : 1);
             }
-
             ctx.fillStyle = '#00FF41';
             ctx.font = `${fontSize}px monospace`;
-
             for (let i = 0; i < drops.length; i++) {
                 if (isGlitching) continue;
-                
                 const char = chars[Math.floor(Math.random() * chars.length)];
                 const x = i * fontSize;
                 const y = drops[i] * fontSize;
-                
                 ctx.fillText(char, x, y);
-                
-                if (y > canvas.height && Math.random() > 0.975) {
-                    drops[i] = 0;
-                }
+                if (y > canvas.height && Math.random() > 0.975) drops[i] = 0;
                 drops[i] += speeds[i] * directions[i];
             }
-            
             requestAnimationFrame(draw);
         }
         draw();
@@ -130,26 +111,18 @@
 
         function updateText() {
             const elapsed = (Date.now() - startTime) / 1000;
-            
             fragments.forEach(frag => {
+                // SKIP frag-0: IT'S ALWAYS VISIBLE VIA CSS
+                if (frag.id === 'frag-0') return;
+                
                 const start = parseInt(frag.dataset.start);
                 if (elapsed >= start && elapsed < start + 10) {
-                    frag.classList.add('visible');
+                    frag.style.opacity = '0.9';
                 } else {
-                    frag.classList.remove('visible');
+                    frag.style.opacity = '0';
                 }
             });
-
-            if (elapsed >= 90) {
-                finalLine.classList.add('visible');
-                if (!localStorage.getItem('void_crossing')) {
-                    localStorage.setItem('void_crossing', JSON.stringify({
-                        timestamp: new Date().toISOString(),
-                        duration: Math.floor(elapsed)
-                    }));
-                }
-            }
-            
+            if (elapsed >= 90) finalLine.classList.add('visible');
             requestAnimationFrame(updateText);
         }
         updateText();
