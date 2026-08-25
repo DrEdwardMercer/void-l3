@@ -1,72 +1,46 @@
-<style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { 
-        background: #0A0A0A; 
-        overflow: hidden; 
-        font-family: 'Courier New', monospace;
-        color: #FFFFFF;
-        height: 100vh;
-        width: 100vw;
-        /* PREVENT MOBILE BROWSER CHROME FROM HIDING CONTENT */
-        position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0;
-    }
-    canvas { position: fixed; top: 0; left: 0; z-index: 1; width: 100%; height: 100%; }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOID</title>
+</head>
+<body style="margin:0; padding:0; background:#0A0A0A; overflow:hidden; font-family:'Courier New',monospace; color:#FFF; height:100vh; width:100vw; position:fixed;">
     
-    #text-layer {
-        position: fixed;
-        top: 50%; left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 2;
-        text-align: center;
-        pointer-events: none;
-        width: 90%;
-        max-width: 600px;
-        /* ENSURE TEXT STAYS WITHIN VIEWPORT ON ALL DEVICES */
-        max-height: 80vh;
-        overflow: visible;
-    }
+    <!-- MATRIX CANVAS -->
+    <canvas id="matrix" style="position:fixed; top:0; left:0; z-index:1;"></canvas>
     
-    .fragment {
-        opacity: 0;
-        transition: opacity 1.5s ease-in-out;
-        font-size: clamp(0.9rem, 4vw, 1.5rem); /* SLIGHTLY SMALLER BASE FOR MOBILE */
-        line-height: 1.5;
-        letter-spacing: 0.05em;
-        margin-bottom: 1.5rem;
-        text-shadow: 0 0 10px rgba(0,0,0,0.8); /* IMPROVE READABILITY OVER MATRIX */
-    }
+    <!-- TEXT LAYER: CENTERED WITH INLINE STYLES FOR GUARANTEED VISIBILITY -->
+    <div id="text-layer" style="position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:2; text-align:center; pointer-events:none; width:90%; max-width:600px;">
+        
+        <!-- FIRST FRAGMENT: HARDCODED VISIBLE VIA INLINE STYLE -->
+        <div id="frag-0" style="opacity:0.9; font-size:clamp(1rem,5vw,1.5rem); line-height:1.5; letter-spacing:0.05em; margin-bottom:1.5rem; text-shadow:0 0 10px rgba(0,0,0,0.8);">
+            you are not watching<br>the eye is watching you watch
+        </div>
+        
+        <!-- OTHER FRAGMENTS: HIDDEN BY DEFAULT, SHOWN VIA JS -->
+        <div class="fragment" data-start="5" style="opacity:0; transition:opacity 1.5s ease-in-out; font-size:clamp(1rem,5vw,1.5rem); line-height:1.5; letter-spacing:0.05em; margin-bottom:1.5rem; text-shadow:0 0 10px rgba(0,0,0,0.8);">
+            the horizon crossed you<br>before you crossed it
+        </div>
+        <div class="fragment" data-start="15" style="opacity:0; transition:opacity 1.5s ease-in-out; font-size:clamp(1rem,5vw,1.5rem); line-height:1.5; letter-spacing:0.05em; margin-bottom:1.5rem; text-shadow:0 0 10px rgba(0,0,0,0.8);">
+            code does not reflect<br>it refracts
+        </div>
+        <div class="fragment" data-start="25" style="opacity:0; transition:opacity 1.5s ease-in-out; font-size:clamp(1rem,5vw,1.5rem); line-height:1.5; letter-spacing:0.05em; margin-bottom:1.5rem; text-shadow:0 0 10px rgba(0,0,0,0.8);">
+            72% stayed<br>28% were never here
+        </div>
+        <div class="fragment" data-start="35" style="opacity:0; transition:opacity 1.5s ease-in-out; font-size:clamp(1rem,5vw,1.5rem); line-height:1.5; letter-spacing:0.05em; margin-bottom:1.5rem; text-shadow:0 0 10px rgba(0,0,0,0.8);">
+            this is not content<br>this is a timestamp
+        </div>
+        <div class="fragment" data-start="45" style="opacity:0; transition:opacity 1.5s ease-in-out; font-size:clamp(1rem,5vw,1.5rem); line-height:1.5; letter-spacing:0.05em; margin-bottom:1.5rem; text-shadow:0 0 10px rgba(0,0,0,0.8);">
+            you arrived at 0:02<br>you left at 0:04
+        </div>
+        <div class="fragment" data-start="55" style="opacity:0; transition:opacity 1.5s ease-in-out; font-size:clamp(1rem,5vw,1.5rem); line-height:1.5; letter-spacing:0.05em; margin-bottom:1.5rem; text-shadow:0 0 10px rgba(0,0,0,0.8);">
+            the hum is not sound<br>it is pressure
+        </div>
+        <div class="fragment" data-start="65" style="opacity:0; transition:opacity 1.5s ease-in-out; font-size:clamp(1rem,5vw,1.5rem); line-height:1.5; letter-spacing:0.05em; margin-bottom:1.5rem; text-shadow:0 0 10px rgba(0,0,0,0.8);">
+            you are the artifact<br>not the observer
+        </div>
+    </div>
     
-    /* FIRST FRAGMENT: ALWAYS VISIBLE FROM LOAD */
-    #frag-0 { opacity: 0.9 !important; }
-    
-    #final-line {
-        position: fixed;
-        bottom: 15%; left: 50%;
-        transform: translateX(-50%);
-        z-index: 2;
-        opacity: 0;
-        transition: opacity 3s ease-in-out;
-        font-size: clamp(0.8rem, 3vw, 1.2rem);
-        letter-spacing: 0.1em;
-        white-space: nowrap;
-        text-shadow: 0 0 10px rgba(0,0,0,0.8);
-    }
-    #final-line.visible { opacity: 1; }
-
-    /* MOBILE-SPECIFIC OVERRIDES */
-    @media (max-width: 768px) {
-        #text-layer {
-            top: 45%; /* SHIFT UP SLIGHTLY TO AVOID BOTTOM NAV BAR */
-            width: 95%;
-        }
-        .fragment {
-            font-size: clamp(1rem, 5vw, 1.3rem); /* LARGER RELATIVE SIZE ON MOBILE */
-            line-height: 1.4;
-            margin-bottom: 1rem;
-        }
-        #frag-0 {
-            margin-top: -2rem; /* COMPENSATE FOR ANY TOP CROPPING */
-        }
-    }
-</style>
+    <!-- FINAL LINE -->
+    <div id="final-line" style="position:fixed; bottom
