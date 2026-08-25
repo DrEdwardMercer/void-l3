@@ -37,7 +37,24 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
+            padding-top: 10vh;
+            overflow-y: auto;
+            max-height: 90vh;
+            box-sizing: border-box;
+        }
+
+        #return-msg {
+            font-size: clamp(0.9rem, 4vw, 1.3rem);
+            line-height: 1.4;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 8px rgba(0, 255, 65, 0.6);
+            color: #00FF41;
+            min-height: 1.4em;
+            white-space: pre-wrap;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
         }
 
         .fragment {
@@ -69,17 +86,18 @@
             pointer-events: auto;
             margin-top: 0.5rem;
             text-shadow: 0 0 8px rgba(0, 255, 65, 0.6);
+            font-size: clamp(0.85rem, 3.5vw, 1.1rem);
+            line-height: 1.4;
+            letter-spacing: 0.05em;
+            color: #00FF41;
+            opacity: 0.9;
         }
 
         #cta a {
             color: #00FF41;
             font-family: 'Courier New', monospace;
-            font-size: clamp(0.85rem, 3.5vw, 1.1rem);
             text-decoration: none;
-            opacity: 0.9;
-            line-height: 1.4;
-            letter-spacing: 0.05em;
-            word-break: break-all;
+            cursor: pointer;
         }
 
         #cta a:hover {
@@ -98,6 +116,7 @@
     <canvas id="matrix"></canvas>
     
     <div id="text-layer">
+        <div id="return-msg"></div>
         <div class="fragment"></div>
         <div class="fragment"></div>
         <div class="fragment"></div>
@@ -181,6 +200,7 @@
         ];
 
         const container = document.getElementById('text-layer');
+        const returnMsgEl = document.getElementById('return-msg');
         const fragmentEls = container.querySelectorAll('.fragment');
         const ctaEl = document.getElementById('cta');
         
@@ -232,17 +252,21 @@
             }
         }
 
-        function triggerCTA(ctaText) {
+        function triggerCTA() {
             const url = "https://lulu.com/shop/dr-e-mercer-kimi/uncontrolled-optimization/ebook/product-e7qgrnd.html";
-            const parts = ctaText.split(url);
-            
+            const staticText = isReturnVisit 
+                ? 'the recursion deepens. ' 
+                : 'the full recursion is bound. ';
+
             ctaEl.innerHTML = '';
+            
+            const textNode = document.createTextNode(staticText);
             const link = document.createElement('a');
             link.href = url;
             link.target = '_blank';
             link.rel = 'noopener noreferrer';
-            link.textContent = ctaText;
-            
+            link.textContent = '[ACQUIRE]';
+
             link.addEventListener('click', () => {
                 let clicks = [];
                 try {
@@ -253,11 +277,12 @@
                 localStorage.setItem('void_cta_clicks', JSON.stringify(clicks));
             });
 
+            ctaEl.appendChild(textNode);
             ctaEl.appendChild(link);
 
             setTimeout(() => {
                 ctaEl.style.opacity = '1';
-            }, isReturnVisit ? 3000 : 3000);
+            }, 3000);
 
             const durationSeconds = (Date.now() - startTime) / 1000;
             localStorage.setItem('void_crossing', JSON.stringify({
@@ -271,12 +296,7 @@
             if (currentFragIndex >= activeFragments.length) {
                 cursor.classList.add('stopped');
                 cursor.remove();
-                
-                const ctaText = isReturnVisit 
-                    ? 'the recursion deepens. https://lulu.com/shop/dr-e-mercer-kimi/uncontrolled-optimization/ebook/product-e7qgrnd.html'
-                    : 'the full recursion is bound. https://lulu.com/shop/dr-e-mercer-kimi/uncontrolled-optimization/ebook/product-e7qgrnd.html';
-                
-                triggerCTA(ctaText);
+                triggerCTA();
                 return;
             }
 
@@ -306,15 +326,20 @@
                 activeFragments = [...baseFragments];
                 typeNextChar();
             } else {
-                fragmentEls[0].textContent = `visit #${currentVisitCount}. the eye has been waiting.`;
+                returnMsgEl.textContent = `visit #${currentVisitCount}. the eye has been waiting.`;
                 
+                requestAnimationFrame(() => {
+                    returnMsgEl.style.opacity = '1';
+                });
+
                 setTimeout(() => {
-                    fragmentEls[0].textContent = '';
-                    
-                    activeFragments = shuffle([...baseFragments], currentVisitCount);
-                    activeFragments[activeFragments.length - 1] = "you are still here.\nthe void is still watching.";
-                    
-                    typeNextChar();
+                    returnMsgEl.style.opacity = '0';
+                    setTimeout(() => {
+                        returnMsgEl.style.display = 'none';
+                        activeFragments = shuffle([...baseFragments], currentVisitCount);
+                        activeFragments[activeFragments.length - 1] = "you are still here.\nthe void is still watching.";
+                        typeNextChar();
+                    }, 1000);
                 }, 5000);
             }
         }
