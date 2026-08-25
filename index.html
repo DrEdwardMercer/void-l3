@@ -38,7 +38,7 @@
             letter-spacing: 0.05em;
             margin-bottom: 2rem;
         }
-        .fragment.visible { opacity: 0.9; }
+        .fragment.visible { opacity: 0.9 !important; }
         #final-line {
             position: fixed;
             bottom: 10%;
@@ -57,28 +57,18 @@
 <body>
     <canvas id="matrix"></canvas>
     <div id="text-layer">
-        <!-- TIMELINE FIXED: FIRST TEXT AT 0 SECONDS -->
         <div class="fragment visible" data-start="0">you are not watching<br>the eye is watching you watch</div>
-        
-        <!-- HORIZON LINE MOVED TO 5 SECONDS -->
         <div class="fragment" data-start="5">the horizon crossed you<br>before you crossed it</div>
-        
         <div class="fragment" data-start="15">code does not reflect<br>it refracts</div>
-        
         <div class="fragment" data-start="25">72% stayed<br>28% were never here</div>
-        
         <div class="fragment" data-start="35">this is not content<br>this is a timestamp</div>
-        
         <div class="fragment" data-start="45">you arrived at 0:02<br>you left at 0:04</div>
-        
         <div class="fragment" data-start="55">the hum is not sound<br>it is pressure</div>
-        
         <div class="fragment" data-start="65">you are the artifact<br>not the observer</div>
     </div>
     <div id="final-line">you were here. the void remembers.</div>
 
     <script>
-        // MATRIX RAIN
         const canvas = document.getElementById('matrix');
         const ctx = canvas.getContext('2d');
         
@@ -134,7 +124,6 @@
         }
         draw();
 
-        // TEXT FRAGMENTS - UPDATED LOGIC
         const fragments = document.querySelectorAll('.fragment');
         const finalLine = document.getElementById('final-line');
         let startTime = Date.now();
@@ -144,7 +133,6 @@
             
             fragments.forEach(frag => {
                 const start = parseInt(frag.dataset.start);
-                // Show fragment if time is past start AND within 10s window
                 if (elapsed >= start && elapsed < start + 10) {
                     frag.classList.add('visible');
                 } else {
@@ -166,7 +154,6 @@
         }
         updateText();
 
-        // MOBILE OPTIMIZATION
         if (window.innerWidth < 768) {
             columns = Math.floor(columns * 0.6);
             drops = drops.slice(0, columns);
